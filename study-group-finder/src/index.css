@@ -20,3 +20,22 @@
   border-radius: 4px;
   cursor: pointer;
 }
+.filter-bar {
+  margin: 1rem 0;
+}
+.filter-section {
+  margin: 0.5rem 0;
+}
+.filter-bar button {
+  margin: 0.25rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #4a90e2;
+  background: white;
+  color: #4a90e2;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.filter-bar button.active {
+  background: #4a90e2;
+  color: white;
+}

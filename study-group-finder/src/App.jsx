@@ -4,6 +4,7 @@ import Header from "./component/Header";
 import EventList from "./component/EventList";
 import MyEvents from "./component/MyEvent";
 import eventsData from "./data/events.json";
+import EventFilter from "./component/EventFilter";
 
 function App() {
   const [joinedEvents, setJoinedEvents] = useState([]);
@@ -33,6 +34,10 @@ function App() {
     const updated = joinedEvents.filter((e) => e.id !== id);
     setJoinedEvents(updated);
   };
+   const filteredEvents = selectedCategory
+    ? eventsData.filter((e) => e.category === selectedCategory)
+    : eventsData;
+
 
   return (
     <div>
@@ -41,7 +46,11 @@ function App() {
       <main style={{ padding: "1rem" }}>
         <section>
           <h2>Upcoming Events</h2>
-          <EventList events={eventsData} onJoin={handleJoin} />
+          <EventFilter
+            selectedCategory={selectedCategory}
+            onFilterChange={setSelectedCategory}
+          />
+          <EventList events={filteredEvents} onJoin={handleJoin} />
         </section>
 
         <section>
@@ -50,6 +59,7 @@ function App() {
         </section>
       </main>
     </div>
+
   );
 }
 
