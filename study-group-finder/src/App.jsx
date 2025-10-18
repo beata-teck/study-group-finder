@@ -4,6 +4,7 @@ import EventList from "./components/EventList";
 import MyEvents from "./components/MyEvents";
 import EventFilter from "./components/EventFilter";
 import eventsData from "./data/events.json";
+import CalendarView from "./components/CalanderVeiw";
 
 function App() {
   // ✅ Initialize from localStorage directly
@@ -72,6 +73,11 @@ function App() {
           <MyEvents joinedEvents={joinedEvents} onRemove={handleRemove} />
         </section>
       </main>
+      <section>
+  <h2>Calendar View</h2>
+  <CalendarView events={eventsData} />
+</section>
+
     </div>
   );
 }

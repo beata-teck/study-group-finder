@@ -175,3 +175,47 @@ body.dark button {
 body.dark button:hover {
   background: #666;
 }
+.calendar {
+  margin: 2rem 0;
+  text-align: center;
+  background-color: #10cccc;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-top: 1rem;
+}
+
+.day-name {
+  font-weight: bold;
+  background: #9a262603;
+  padding: 0.5rem;
+}
+
+.day {
+  border: 1px solid #ddd;
+  min-height: 80px;
+  padding: 4px;
+  position: relative;
+  background: white;
+}
+
+.day.has-event {
+  background: #eaf4ff;
+  border-color: #4a90e2;
+}
+
+.day .date {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.event-list {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  text-align: left;
+}
