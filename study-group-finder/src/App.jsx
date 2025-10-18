@@ -1,40 +1,54 @@
 // src/App.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "./component/Header";
 import EventList from "./component/EventList";
+import MyEvents from "./component/MyEvent";
 import eventsData from "./data/events.json";
 
 function App() {
-  const [joinedEvents, setJoinedEvents] = useState(() => {
-    const saved = localStorage.getItem("joinedEvents");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [joinedEvents, setJoinedEvents] = useState([]);
 
+  // ✅ Load joined events from local storage when app starts
+  useEffect(() => {
+    const savedEvents = localStorage.getItem("joinedEvents");
+    if (savedEvents) {
+      setJoinedEvents(JSON.parse(savedEvents));
+    }
+  }, []);
+
+  // ✅ Save joined events whenever they change
+  useEffect(() => {
+    localStorage.setItem("joinedEvents", JSON.stringify(joinedEvents));
+  }, [joinedEvents]);
+
+  // ✅ Add event to My Events
   const handleJoin = (event) => {
-    setJoinedEvents((prev) => {
-      if (prev.find((e) => e.id === event.id)) return prev;
-      const next = [...prev, event];
-      localStorage.setItem("joinedEvents", JSON.stringify(next));
-      return next;
-    });
+    if (!joinedEvents.find((e) => e.id === event.id)) {
+      setJoinedEvents([...joinedEvents, event]);
+    }
   };
 
-  const handleLeave = (event) => {
-    setJoinedEvents((prev) => {
-      const next = prev.filter((e) => e.id !== event.id);
-      localStorage.setItem("joinedEvents", JSON.stringify(next));
-      return next;
-    });
+  // ✅ Remove event from My Events
+  const handleRemove = (id) => {
+    const updated = joinedEvents.filter((e) => e.id !== id);
+    setJoinedEvents(updated);
   };
 
   return (
     <div>
       <Header />
-      <h2>Upcoming Events</h2>
-      <EventList events={eventsData} onJoin={handleJoin} />
 
-      <h2>My Events</h2>
-      <EventList events={joinedEvents} onJoin={handleLeave} />
+      <main style={{ padding: "1rem" }}>
+        <section>
+          <h2>Upcoming Events</h2>
+          <EventList events={eventsData} onJoin={handleJoin} />
+        </section>
+
+        <section>
+          <h2>My Events</h2>
+          <MyEvents joinedEvents={joinedEvents} onRemove={handleRemove} />
+        </section>
+      </main>
     </div>
   );
 }
