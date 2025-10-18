@@ -1,17 +1,30 @@
 // src/App.jsx
 import React, { useState } from "react";
-import Header from "./components/Header";
-import EventList from "./components/EventList";
+import Header from "./component/Header";
+import EventList from "./component/EventList";
 import eventsData from "./data/events.json";
 
 function App() {
-  const [joinedEvents, setJoinedEvents] = useState([]);
+  const [joinedEvents, setJoinedEvents] = useState(() => {
+    const saved = localStorage.getItem("joinedEvents");
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const handleJoin = (event) => {
-    if (!joinedEvents.find((e) => e.id === event.id)) {
-      setJoinedEvents([...joinedEvents, event]);
-      localStorage.setItem("joinedEvents", JSON.stringify([...joinedEvents, event]));
-    }
+    setJoinedEvents((prev) => {
+      if (prev.find((e) => e.id === event.id)) return prev;
+      const next = [...prev, event];
+      localStorage.setItem("joinedEvents", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const handleLeave = (event) => {
+    setJoinedEvents((prev) => {
+      const next = prev.filter((e) => e.id !== event.id);
+      localStorage.setItem("joinedEvents", JSON.stringify(next));
+      return next;
+    });
   };
 
   return (
@@ -21,7 +34,7 @@ function App() {
       <EventList events={eventsData} onJoin={handleJoin} />
 
       <h2>My Events</h2>
-      <EventList events={joinedEvents} onJoin={() => {}} />
+      <EventList events={joinedEvents} onJoin={handleLeave} />
     </div>
   );
 }

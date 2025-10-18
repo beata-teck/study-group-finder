@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "title": "Math Study Group",
+    "subject": "Mathematics",
+    "date": "2025-10-20",
+    "location": "Library Room 3"
+  },
+  {
+    "id": 2,
+    "title": "Intro to Python",
+    "subject": "Computer Science",
+    "date": "2025-10-22",
+    "location": "Lab 1"
+  }
+]

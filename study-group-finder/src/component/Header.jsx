@@ -1,4 +1,5 @@
-import React from 'react';
+// src/components/Header.jsx
+import React from "react";
 
 function Header() {
   return (
