@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState, useEffect } from "react";
 import Header from "./components/Header";
 import EventList from "./components/EventList";
@@ -7,42 +6,42 @@ import EventFilter from "./components/EventFilter";
 import eventsData from "./data/events.json";
 
 function App() {
-  const [joinedEvents, setJoinedEvents] = useState([]);
+  // ✅ Initialize from localStorage directly
+  const [joinedEvents, setJoinedEvents] = useState(() => {
+    const saved = localStorage.getItem("joinedEvents");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [theme, setTheme] = useState("light"); // ✅ new state
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "light";
+  });
 
-  useEffect(() => {
-    const savedEvents = localStorage.getItem("joinedEvents");
-    if (savedEvents) {
-      setJoinedEvents(JSON.parse(savedEvents));
-    }
-
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setTheme(savedTheme);
-    }
-  }, []);
-
+  // ✅ Save joined events whenever they change
   useEffect(() => {
     localStorage.setItem("joinedEvents", JSON.stringify(joinedEvents));
   }, [joinedEvents]);
 
+  // ✅ Save theme whenever it changes
   useEffect(() => {
-    document.body.className = theme; // ✅ apply theme to body
+    document.body.className = theme;
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  // Add event
   const handleJoin = (event) => {
     if (!joinedEvents.find((e) => e.id === event.id)) {
       setJoinedEvents([...joinedEvents, event]);
     }
   };
 
+  // Remove event
   const handleRemove = (id) => {
     const updated = joinedEvents.filter((e) => e.id !== id);
     setJoinedEvents(updated);
   };
 
+  // Filter events
   const filteredEvents = selectedCategory
     ? eventsData.filter((e) => e.category === selectedCategory)
     : eventsData;
@@ -51,7 +50,7 @@ function App() {
     <div>
       <Header />
 
-      {/* ✅ Theme toggle button */}
+      {/* Theme toggle */}
       <div style={{ textAlign: "center", margin: "1rem" }}>
         <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
           Switch to {theme === "light" ? "Dark" : "Light"} Mode
