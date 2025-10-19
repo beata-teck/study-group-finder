@@ -1,5 +1,8 @@
+// src/components/CalendarView.jsx
 import React, { useState } from "react";
-function CalendarView({ events }) {
+import "./CalendarView.css";
+
+function CalendarView({ events, onJoin, onLeave }) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -105,7 +108,12 @@ function CalendarView({ events }) {
                 <li key={e.id}>
                   <strong>{e.title}</strong><br />
                   {e.description || "No description"}<br />
-                  {e.time && <em>{e.time}</em>}
+                  {e.time && <em>{e.time}</em>}<br />
+                  {e.joined ? (
+                    <button onClick={() => onLeave(e.id)}>Leave</button>
+                  ) : (
+                    <button onClick={() => onJoin(e.id)}>Join</button>
+                  )}
                 </li>
               ))}
             </ul>

@@ -267,3 +267,16 @@ body.dark button:hover {
   border-radius: 4px;
   cursor: pointer;
 }
+.popup-content button {
+  margin-top: 0.5rem;
+  background: #4a90e2;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.popup-content button:hover {
+  background: #357ab8;
+}

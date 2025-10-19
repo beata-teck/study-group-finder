@@ -18,12 +18,9 @@ function App() {
     return localStorage.getItem("theme") || "light";
   });
 
-  // ✅ Save joined events whenever they change
   useEffect(() => {
     localStorage.setItem("joinedEvents", JSON.stringify(joinedEvents));
   }, [joinedEvents]);
-
-  // ✅ Save theme whenever it changes
   useEffect(() => {
     document.body.className = theme;
     localStorage.setItem("theme", theme);
@@ -75,7 +72,11 @@ function App() {
       </main>
       <section>
   <h2>Calendar View</h2>
-  <CalendarView events={eventsData} />
+  <CalendarView 
+  events={eventsData} 
+  onJoin={handleJoin} 
+  onLeave={handleLeave} 
+/>
 </section>
 
     </div>

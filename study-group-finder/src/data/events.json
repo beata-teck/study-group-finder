@@ -5,7 +5,8 @@
     "subject": "Mathematics",
     "date": "2025-10-20",
     "location": "Library Room 3",
-    "category": "Math"
+    "category": "Math",
+    "joined": false
   },
   {
     "id": 2,
@@ -13,7 +14,8 @@
     "subject": "Computer Science",
     "date": "2025-10-22",
     "location": "Lab 1",
-    "category": "Java"
+    "category": "Java",
+    "joined": false
   },
   {
     "id": 3,
@@ -21,7 +23,8 @@
     "subject": "Computer Science",
     "date": "2025-10-25",
     "location": "Lab 2",
-    "category": "C++"
+    "category": "C++",
+    "joined": false
   },
   {
     "id": 4,
@@ -29,7 +32,8 @@
     "subject": "Web",
     "date": "2025-10-28",
     "location": "Room 5",
-    "category": "Web"
+    "category": "Web",
+    "joined": false
   },
   {
     "id": 5,
@@ -37,7 +41,8 @@
     "subject": "Computer Science",
     "date": "2025-11-01",
     "location": "Lab 3",
-    "category": "Python"
+    "category": "Python",
+    "joined": false
   },
   {
     "id": 6,
@@ -45,7 +50,8 @@
     "subject": "Sports",
     "date": "2025-11-03",
     "location": "Campus Field",
-    "category": "Sports"
+    "category": "Sports",
+    "joined": false
   },
   {
     "id": 7,
@@ -53,6 +59,7 @@
     "subject": "Social",
     "date": "2025-11-05",
     "location": "Main Hall",
-    "category": "Social"
+    "category": "Social",
+    "joined": false
   }
 ]
