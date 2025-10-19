@@ -1,8 +1,6 @@
 // src/components/CalendarView.jsx
 import React, { useState } from "react";
-import "./CalendarView.css";
-
-function CalendarView({ events, onJoin, onLeave }) {
+function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -15,6 +13,7 @@ function CalendarView({ events, onJoin, onLeave }) {
   const firstDay = new Date(currentYear, currentMonth, 1).getDay();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
+  // Map events by date
   const eventMap = {};
   events.forEach((event) => {
     const eventDate = new Date(event.date);
@@ -28,6 +27,7 @@ function CalendarView({ events, onJoin, onLeave }) {
     }
   });
 
+  // Build calendar cells
   const cells = [];
   for (let i = 0; i < firstDay; i++) {
     cells.push(<div key={`empty-${i}`} className="empty"></div>);
@@ -56,6 +56,7 @@ function CalendarView({ events, onJoin, onLeave }) {
     );
   }
 
+  // Navigation handlers
   const prevMonth = () => {
     if (currentMonth === 0) {
       setCurrentMonth(11);
@@ -104,18 +105,21 @@ function CalendarView({ events, onJoin, onLeave }) {
           <div className="popup-content">
             <h3>Events on {selectedDay.day} {monthName} {currentYear}</h3>
             <ul>
-              {selectedDay.events.map((e) => (
-                <li key={e.id}>
-                  <strong>{e.title}</strong><br />
-                  {e.description || "No description"}<br />
-                  {e.time && <em>{e.time}</em>}<br />
-                  {e.joined ? (
-                    <button onClick={() => onLeave(e.id)}>Leave</button>
-                  ) : (
-                    <button onClick={() => onJoin(e.id)}>Join</button>
-                  )}
-                </li>
-              ))}
+              {selectedDay.events.map((e) => {
+                const isJoined = joinedEvents.some((je) => je.id === e.id);
+                return (
+                  <li key={e.id}>
+                    <strong>{e.title}</strong><br />
+                    {e.description || "No description"}<br />
+                    {e.time && <em>{e.time}</em>}<br />
+                    {isJoined ? (
+                      <button onClick={() => onLeave(e.id)}>Leave</button>
+                    ) : (
+                      <button onClick={() => onJoin(e)}>Join</button>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
             <button onClick={() => setSelectedDay(null)}>Close</button>
           </div>

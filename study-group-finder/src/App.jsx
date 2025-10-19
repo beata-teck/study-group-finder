@@ -1,86 +1,140 @@
-import React, { useState, useEffect } from "react";
-import Header from "./components/Header";
-import EventList from "./components/EventList";
-import MyEvents from "./components/MyEvents";
-import EventFilter from "./components/EventFilter";
-import eventsData from "./data/events.json";
-import CalendarView from "./components/CalanderVeiw";
+// src/components/CalendarView.jsx
+import React, { useState } from "react";
 
-function App() {
-  // ✅ Initialize from localStorage directly
-  const [joinedEvents, setJoinedEvents] = useState(() => {
-    const saved = localStorage.getItem("joinedEvents");
-    return saved ? JSON.parse(saved) : [];
+function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [selectedDay, setSelectedDay] = useState(null);
+
+  const monthName = new Date(currentYear, currentMonth).toLocaleString("default", {
+    month: "long",
   });
 
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("theme") || "light";
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+  // Map events by date
+  const eventMap = {};
+  events.forEach((event) => {
+    const eventDate = new Date(event.date);
+    if (
+      eventDate.getFullYear() === currentYear &&
+      eventDate.getMonth() === currentMonth
+    ) {
+      const day = eventDate.getDate();
+      if (!eventMap[day]) eventMap[day] = [];
+      eventMap[day].push(event);
+    }
   });
 
-  useEffect(() => {
-    localStorage.setItem("joinedEvents", JSON.stringify(joinedEvents));
-  }, [joinedEvents]);
-  useEffect(() => {
-    document.body.className = theme;
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+  // Build calendar cells
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) {
+    cells.push(<div key={`empty-${i}`} className="empty"></div>);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday =
+      d === today.getDate() &&
+      currentMonth === today.getMonth() &&
+      currentYear === today.getFullYear();
 
-  // Add event
-  const handleJoin = (event) => {
-    if (!joinedEvents.find((e) => e.id === event.id)) {
-      setJoinedEvents([...joinedEvents, event]);
+    const hasEvents = eventMap[d];
+    const hasJoined =
+      hasEvents && hasEvents.some((e) => joinedEvents.some((je) => je.id === e.id));
+
+    cells.push(
+      <div
+        key={d}
+        className={`day 
+          ${hasEvents ? "has-event" : ""} 
+          ${isToday ? "today" : ""} 
+          ${hasJoined ? "joined-day" : ""}`}
+        onClick={() => hasEvents && setSelectedDay({ day: d, events: hasEvents })}
+      >
+        <span className="date">{d}</span>
+        {hasEvents && (
+          <ul className="event-list">
+            {hasEvents.map((e) => (
+              <li key={e.id}>{e.title}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
+  // Navigation handlers
+  const prevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
     }
   };
 
-  // Remove event
-  const handleRemove = (id) => {
-    const updated = joinedEvents.filter((e) => e.id !== id);
-    setJoinedEvents(updated);
+  const nextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
   };
 
-  // Filter events
-  const filteredEvents = selectedCategory
-    ? eventsData.filter((e) => e.category === selectedCategory)
-    : eventsData;
+  const goToToday = () => {
+    setCurrentMonth(today.getMonth());
+    setCurrentYear(today.getFullYear());
+  };
 
   return (
-    <div>
-      <Header />
-
-      {/* Theme toggle */}
-      <div style={{ textAlign: "center", margin: "1rem" }}>
-        <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-          Switch to {theme === "light" ? "Dark" : "Light"} Mode
-        </button>
+    <div className="calendar">
+      <div className="calendar-header">
+        <button onClick={prevMonth}>◀</button>
+        <h2>{monthName} {currentYear}</h2>
+        <button onClick={nextMonth}>▶</button>
+        <button className="today-btn" onClick={goToToday}>Today</button>
       </div>
 
-      <main style={{ padding: "1rem" }}>
-        <section>
-          <h2>Upcoming Events</h2>
-          <EventFilter
-            selectedCategory={selectedCategory}
-            onFilterChange={setSelectedCategory}
-          />
-          <EventList events={filteredEvents} onJoin={handleJoin} />
-        </section>
+      <div className="calendar-grid">
+        <div className="day-name">Sun</div>
+        <div className="day-name">Mon</div>
+        <div className="day-name">Tue</div>
+        <div className="day-name">Wed</div>
+        <div className="day-name">Thu</div>
+        <div className="day-name">Fri</div>
+        <div className="day-name">Sat</div>
+        {cells}
+      </div>
 
-        <section>
-          <h2>My Events</h2>
-          <MyEvents joinedEvents={joinedEvents} onRemove={handleRemove} />
-        </section>
-      </main>
-      <section>
-  <h2>Calendar View</h2>
-  <CalendarView 
-  events={eventsData} 
-  onJoin={handleJoin} 
-  onLeave={handleLeave} 
-/>
-</section>
-
+      {selectedDay && (
+        <div className="event-popup">
+          <div className="popup-content">
+            <h3>Events on {selectedDay.day} {monthName} {currentYear}</h3>
+            <ul>
+              {selectedDay.events.map((e) => {
+                const isJoined = joinedEvents.some((je) => je.id === e.id);
+                return (
+                  <li key={e.id}>
+                    <strong>{e.title}</strong><br />
+                    {e.description || "No description"}<br />
+                    {e.time && <em>{e.time}</em>}<br />
+                    {isJoined ? (
+                      <button onClick={() => onLeave(e.id)}>Leave</button>
+                    ) : (
+                      <button onClick={() => onJoin(e)}>Join</button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <button onClick={() => setSelectedDay(null)}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export default App;
+export default CalendarView;

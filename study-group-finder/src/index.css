@@ -280,3 +280,13 @@ body.dark button:hover {
 .popup-content button:hover {
   background: #357ab8;
 }
+
+.day.joined-day {
+  background: #e0ffe5;       
+  border: 2px solid #4caf50; 
+}
+
+.day.joined-day .date {
+  color: #2e7d32;            
+  font-weight: bold;
+}
