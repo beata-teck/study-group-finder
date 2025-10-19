@@ -1,16 +1,17 @@
-// src/components/CalendarView.jsx
 import React, { useState } from "react";
-
 function CalendarView({ events }) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [selectedDay, setSelectedDay] = useState(null);
 
-  // Get first day of month
+  const monthName = new Date(currentYear, currentMonth).toLocaleString("default", {
+    month: "long",
+  });
+
   const firstDay = new Date(currentYear, currentMonth, 1).getDay();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-  // Map events by date
   const eventMap = {};
   events.forEach((event) => {
     const eventDate = new Date(event.date);
@@ -24,14 +25,22 @@ function CalendarView({ events }) {
     }
   });
 
-  // Build calendar cells
   const cells = [];
   for (let i = 0; i < firstDay; i++) {
     cells.push(<div key={`empty-${i}`} className="empty"></div>);
   }
   for (let d = 1; d <= daysInMonth; d++) {
+    const isToday =
+      d === today.getDate() &&
+      currentMonth === today.getMonth() &&
+      currentYear === today.getFullYear();
+
     cells.push(
-      <div key={d} className={`day ${eventMap[d] ? "has-event" : ""}`}>
+      <div
+        key={d}
+        className={`day ${eventMap[d] ? "has-event" : ""} ${isToday ? "today" : ""}`}
+        onClick={() => eventMap[d] && setSelectedDay({ day: d, events: eventMap[d] })}
+      >
         <span className="date">{d}</span>
         {eventMap[d] && (
           <ul className="event-list">
@@ -44,7 +53,6 @@ function CalendarView({ events }) {
     );
   }
 
-  // Navigation handlers
   const prevMonth = () => {
     if (currentMonth === 0) {
       setCurrentMonth(11);
@@ -72,12 +80,7 @@ function CalendarView({ events }) {
     <div className="calendar">
       <div className="calendar-header">
         <button onClick={prevMonth}>◀</button>
-        <h2>
-          {new Date(currentYear, currentMonth).toLocaleString("default", {
-            month: "long",
-          })}{" "}
-          {currentYear}
-        </h2>
+        <h2>{monthName} {currentYear}</h2>
         <button onClick={nextMonth}>▶</button>
         <button className="today-btn" onClick={goToToday}>Today</button>
       </div>
@@ -92,6 +95,24 @@ function CalendarView({ events }) {
         <div className="day-name">Sat</div>
         {cells}
       </div>
+
+      {selectedDay && (
+        <div className="event-popup">
+          <div className="popup-content">
+            <h3>Events on {selectedDay.day} {monthName} {currentYear}</h3>
+            <ul>
+              {selectedDay.events.map((e) => (
+                <li key={e.id}>
+                  <strong>{e.title}</strong><br />
+                  {e.description || "No description"}<br />
+                  {e.time && <em>{e.time}</em>}
+                </li>
+              ))}
+            </ul>
+            <button onClick={() => setSelectedDay(null)}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
