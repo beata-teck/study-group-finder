@@ -91,10 +91,10 @@ function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
   return (
     <div className="calendar">
       <div className="calendar-header">
-        <button onClick={prevMonth}>◀</button>
+        <button className="btn btn-ghost" onClick={prevMonth} aria-label="Previous month">◀</button>
         <h2>{monthName} {currentYear}</h2>
-        <button onClick={nextMonth}>▶</button>
-        <button className="today-btn" onClick={goToToday}>Today</button>
+        <button className="btn btn-ghost" onClick={nextMonth} aria-label="Next month">▶</button>
+        <button className="btn btn-primary today-btn" onClick={goToToday}>Today</button>
       </div>
 
       <div className="calendar-grid">
@@ -124,6 +124,12 @@ function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
                       <button onClick={() => onLeave(e.id)}>Leave</button>
                     ) : (
                       <button onClick={() => onJoin(e)}>Join</button>
+                    )}
+                    {e.custom && (
+                      <>
+                        {' '}
+                        <button className="btn btn-ghost" onClick={() => setSelectedDay(null)}>Close</button>
+                      </>
                     )}
                   </li>
                 );

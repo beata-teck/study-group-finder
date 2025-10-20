@@ -6,6 +6,7 @@ import MyEvents from "./components/MyEvents";
 import EventFilter from "./components/EventFilter";
 import eventsData from "./data/events.json";
 import CalendarView from "./components/CalanderVeiw"; 
+import CreateEventModal from "./components/CreateEventModal";
 
 function App() {
   // Joined events persisted in localStorage
@@ -16,9 +17,15 @@ function App() {
 
   // Category filter
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Theme persisted in localStorage
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+  const [showCreate, setShowCreate] = useState(false);
+  const [customEvents, setCustomEvents] = useState(() => {
+    const saved = localStorage.getItem("customEvents");
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // Persist joined events
   useEffect(() => {
@@ -30,6 +37,11 @@ function App() {
     document.body.className = theme;
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  // Persist custom events
+  useEffect(() => {
+    localStorage.setItem("customEvents", JSON.stringify(customEvents));
+  }, [customEvents]);
 
   // Join event (expects full event object)
   const handleJoin = (event) => {
@@ -43,10 +55,43 @@ function App() {
     setJoinedEvents((prev) => prev.filter((e) => e.id !== id));
   };
 
-  // Filter events by category
-  const filteredEvents = selectedCategory
-    ? eventsData.filter((e) => e.category === selectedCategory)
-    : eventsData;
+  const allEvents = [...eventsData, ...customEvents];
+
+  // Filter events by category and search
+  const filteredEvents = (allEvents || []).filter((e) => {
+    const matchesCategory = selectedCategory ? e.category === selectedCategory : true;
+    const q = searchQuery.trim().toLowerCase();
+    const matchesSearch = q
+      ? [e.title, e.subject, e.location, e.category]
+          .filter(Boolean)
+          .some((v) => String(v).toLowerCase().includes(q))
+      : true;
+    return matchesCategory && matchesSearch;
+  });
+
+  const clearFilters = () => {
+    setSelectedCategory(null);
+    setSearchQuery("");
+  };
+
+  const handleSaveCustom = (ev) => {
+    setCustomEvents((prev) => {
+      const exists = prev.some((p) => p.id === ev.id);
+      return exists ? prev.map((p) => (p.id === ev.id ? ev : p)) : [...prev, ev];
+    });
+  };
+
+  const handleDeleteCustom = (id) => {
+    if (!confirm("Delete this event?")) return;
+    setCustomEvents((prev) => prev.filter((e) => e.id !== id));
+  };
+
+  const goToCalendar = () => {
+    const el = document.getElementById("calendar-section");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
     <div>
@@ -56,6 +101,25 @@ function App() {
             <span className="brand-badge" />
             <span>Study Finder</span>
           </div>
+          <div>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowCreate(true)}
+              aria-label="Create event"
+              title="Create event"
+              style={{ marginRight: "0.5rem" }}
+            >
+              + Create Event
+            </button>
+            <button
+              className="btn btn-ghost"
+              onClick={goToCalendar}
+              aria-label="Go to calendar"
+              title="Calendar"
+              style={{ marginRight: "0.5rem" }}
+            >
+              📅 Calendar
+            </button>
           <button
             className="btn btn-ghost"
             onClick={() => setTheme(theme === "light" ? "dark" : "light")}
@@ -63,6 +127,7 @@ function App() {
           >
             {theme === "light" ? "Dark mode" : "Light mode"}
           </button>
+          </div>
         </div>
       </div>
 
@@ -76,8 +141,16 @@ function App() {
             <EventFilter
               selectedCategory={selectedCategory}
               onFilterChange={setSelectedCategory}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onClearAll={clearFilters}
             />
-            <EventList events={filteredEvents} onJoin={handleJoin} />
+            <EventList
+              events={filteredEvents}
+              onJoin={handleJoin}
+              onEdit={(ev) => setShowCreate(ev)}
+              onDelete={handleDeleteCustom}
+            />
           </section>
 
           <section>
@@ -86,11 +159,11 @@ function App() {
             <MyEvents joinedEvents={joinedEvents} onRemove={handleLeave} />
           </section>
 
-          <section>
+          <section id="calendar-section">
             <h2 className="section-title">Calendar View</h2>
             <p className="section-subtitle">See events across the month at a glance.</p>
             <CalendarView
-              events={eventsData}
+              events={allEvents}
               joinedEvents={joinedEvents}
               onJoin={handleJoin}
               onLeave={handleLeave}
@@ -98,6 +171,21 @@ function App() {
           </section>
         </div>
       </main>
+
+      {showCreate && (
+        <CreateEventModal
+          onClose={() => setShowCreate(false)}
+          onSave={(ev) => {
+            handleSaveCustom(ev);
+            setShowCreate(false);
+          }}
+          initialEvent={typeof showCreate === 'object' ? showCreate : undefined}
+          onDelete={(id) => {
+            handleDeleteCustom(id);
+            setShowCreate(false);
+          }}
+        />
+      )}
     </div>
   );
 }
