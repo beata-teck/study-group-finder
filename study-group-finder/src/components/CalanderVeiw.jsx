@@ -1,5 +1,6 @@
 // src/components/CalendarView.jsx
 import React, { useState } from "react";
+
 function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -38,16 +39,23 @@ function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
       currentMonth === today.getMonth() &&
       currentYear === today.getFullYear();
 
+    const hasEvents = eventMap[d];
+    const hasJoined =
+      hasEvents && hasEvents.some((e) => joinedEvents.some((je) => je.id === e.id));
+
     cells.push(
       <div
         key={d}
-        className={`day ${eventMap[d] ? "has-event" : ""} ${isToday ? "today" : ""}`}
-        onClick={() => eventMap[d] && setSelectedDay({ day: d, events: eventMap[d] })}
+        className={`day 
+          ${hasEvents ? "has-event" : ""} 
+          ${isToday ? "today" : ""} 
+          ${hasJoined ? "joined-day" : ""}`}
+        onClick={() => hasEvents && setSelectedDay({ day: d, events: hasEvents })}
       >
         <span className="date">{d}</span>
-        {eventMap[d] && (
+        {hasEvents && (
           <ul className="event-list">
-            {eventMap[d].map((e) => (
+            {hasEvents.map((e) => (
               <li key={e.id}>{e.title}</li>
             ))}
           </ul>
