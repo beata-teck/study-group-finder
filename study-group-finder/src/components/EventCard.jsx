@@ -13,6 +13,12 @@ function EventCard({ event, onJoin, onRemove, isJoined, onEdit, onDelete }) {
         )}
         {event.custom && <span className="badge">Verified organizer</span>}
       </div>
+      {event.organizer && (
+        <div className="organizer" style={{ marginBottom: 6 }}>
+          <span className="avatar" aria-hidden>{initials(event.organizer)}</span>
+          <span>By {event.organizer}</span>
+        </div>
+      )}
       <p style={{ margin: "0.25rem 0", color: "var(--muted)" }}>
         <strong>Subject:</strong> {event.subject}
       </p>
@@ -98,6 +104,13 @@ function categoryEmoji(category) {
     Social: "🎉",
   };
   return map[category] || "📘";
+}
+
+function initials(name) {
+  const parts = String(name).trim().split(/\s+/);
+  const first = parts[0]?.[0] || '';
+  const last = parts[1]?.[0] || '';
+  return (first + last).toUpperCase() || 'U';
 }
 
 export default EventCard;

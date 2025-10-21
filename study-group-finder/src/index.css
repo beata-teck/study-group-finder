@@ -204,6 +204,25 @@ button { font: inherit; }
   color: #065f46;
 }
 
+/* Avatars */
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--primary);
+}
+.organizer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
 /* Calendar */
 .calendar { margin: 2rem 0; }
 .calendar-header { display: flex; align-items: center; gap: 0.5rem; }
@@ -226,6 +245,7 @@ button { font: inherit; }
 .day .date { font-weight: 600; font-size: 0.9rem; }
 .day ul.event-list { list-style: none; padding: 0; margin: 6px 0 0; font-size: 0.78rem; text-align: left; }
 .today-btn { margin-left: auto; }
+.day.weekend { background: color-mix(in srgb, #f59e0b 8%, var(--surface)); border-color: color-mix(in srgb, #f59e0b 25%, var(--border)); }
 
 .event-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .popup-content { background: var(--surface); color: var(--text); padding: 1.25rem; border-radius: 12px; width: 92%; max-width: 440px; border: 1px solid var(--border); }

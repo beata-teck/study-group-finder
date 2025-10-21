@@ -43,12 +43,16 @@ function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
     const hasJoined =
       hasEvents && hasEvents.some((e) => joinedEvents.some((je) => je.id === e.id));
 
+    const dayOfWeek = new Date(currentYear, currentMonth, d).getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
     cells.push(
       <div
         key={d}
         className={`day 
           ${hasEvents ? "has-event" : ""} 
           ${isToday ? "today" : ""} 
+          ${isWeekend ? "weekend" : ""}
           ${hasJoined ? "joined-day" : ""}`}
         onClick={() => hasEvents && setSelectedDay({ day: d, events: hasEvents })}
       >
@@ -95,6 +99,19 @@ function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
         <h2>{monthName} {currentYear}</h2>
         <button className="btn btn-ghost" onClick={nextMonth} aria-label="Next month">▶</button>
         <button className="btn btn-primary today-btn" onClick={goToToday}>Today</button>
+        <div style={{ marginLeft: "auto", display: "inline-flex", gap: 6 }}>
+          <select value={currentMonth} onChange={(e) => setCurrentMonth(Number(e.target.value))}>
+            {Array.from({ length: 12 }).map((_, i) => (
+              <option value={i} key={i}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>
+            ))}
+          </select>
+          <input
+            type="number"
+            value={currentYear}
+            onChange={(e) => setCurrentYear(Number(e.target.value))}
+            style={{ width: 90 }}
+          />
+        </div>
       </div>
 
       <div className="calendar-grid">
@@ -106,6 +123,13 @@ function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
         <div className="day-name">Fri</div>
         <div className="day-name">Sat</div>
         {cells}
+      </div>
+
+      <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', color: 'var(--muted)' }}>
+        <span className="chip">Legend:</span>
+        <span className="chip">Weekend</span>
+        <span className="chip">Has event</span>
+        <span className="chip">Joined</span>
       </div>
 
       {selectedDay && (

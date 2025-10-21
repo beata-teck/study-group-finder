@@ -18,6 +18,7 @@ export default function CreateEventModal({ onClose, onSave, initialEvent, onDele
   const [location, setLocation] = useState(initialEvent?.location || "");
   const [category, setCategory] = useState(initialEvent?.category || "");
   const [description, setDescription] = useState(initialEvent?.description || "");
+  const [organizer, setOrganizer] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = (e) => {
@@ -36,6 +37,7 @@ export default function CreateEventModal({ onClose, onSave, initialEvent, onDele
       category: category.trim() || "General",
       description: description.trim() || undefined,
       custom: true,
+      organizer: organizer.trim() || undefined,
     };
     onSave && onSave(newEvent);
   };
@@ -98,6 +100,15 @@ export default function CreateEventModal({ onClose, onSave, initialEvent, onDele
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               placeholder="e.g., Math, Web, Python"
+              style={{ padding: "0.55rem 0.7rem", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)" }}
+            />
+          </Field>
+          <Field label="Organizer">
+            <input
+              type="text"
+              value={organizer}
+              onChange={(e) => setOrganizer(e.target.value)}
+              placeholder="Your name or club"
               style={{ padding: "0.55rem 0.7rem", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)" }}
             />
           </Field>
