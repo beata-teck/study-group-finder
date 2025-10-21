@@ -53,12 +53,28 @@ function App() {
   const handleJoin = (event) => {
     if (!joinedEvents.find((e) => e.id === event.id)) {
       setJoinedEvents((prev) => [...prev, event]);
+      incrementJoinCount(event.id);
     }
   };
 
   // Leave/remove event (by id)
   const handleLeave = (id) => {
     setJoinedEvents((prev) => prev.filter((e) => e.id !== id));
+  };
+
+  const incrementJoinCount = (eventId) => {
+    try {
+      const counts = JSON.parse(localStorage.getItem('joinCounts') || '{}');
+      counts[eventId] = (counts[eventId] || 0) + 1;
+      localStorage.setItem('joinCounts', JSON.stringify(counts));
+    } catch {}
+  };
+
+  const getJoinCount = (eventId) => {
+    try {
+      const counts = JSON.parse(localStorage.getItem('joinCounts') || '{}');
+      return counts[eventId] || 0;
+    } catch { return 0 }
   };
 
   const allEvents = [...eventsData, ...customEvents];
@@ -151,6 +167,19 @@ function App() {
 
       <main>
         <div className="container">
+          <section>
+            <h2 className="section-title">Trending this week</h2>
+            <p className="section-subtitle">Most joined recently</p>
+            <div className="grid-list">
+              {allEvents
+                .map((e) => ({ e, c: getJoinCount(e.id) }))
+                .sort((a, b) => b.c - a.c)
+                .slice(0, 5)
+                .map(({ e }) => (
+                  <EventCard key={e.id} event={e} onJoin={handleJoin} isJoined={joinedEvents.some((j) => j.id === e.id)} />
+                ))}
+            </div>
+          </section>
           <section>
             <h2 className="section-title">Upcoming Events</h2>
             <p className="section-subtitle">Browse and join sessions that fit your schedule.</p>

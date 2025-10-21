@@ -5,6 +5,14 @@ function EventCard({ event, onJoin, onRemove, isJoined, onEdit, onDelete }) {
   return (
     <div className="event-card card">
       <h3>{event.title}</h3>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "6px 0" }}>
+        {event.category && (
+          <span className="chip" title={event.category}>
+            {categoryEmoji(event.category)} {event.category}
+          </span>
+        )}
+        {event.custom && <span className="badge">Verified organizer</span>}
+      </div>
       <p style={{ margin: "0.25rem 0", color: "var(--muted)" }}>
         <strong>Subject:</strong> {event.subject}
       </p>
@@ -77,6 +85,19 @@ function EventCard({ event, onJoin, onRemove, isJoined, onEdit, onDelete }) {
       </div>
     </div>
   );
+}
+
+function categoryEmoji(category) {
+  const map = {
+    Math: "📐",
+    Web: "🌐",
+    Python: "🐍",
+    Java: "☕",
+    "C++": "💻",
+    Sports: "🏅",
+    Social: "🎉",
+  };
+  return map[category] || "📘";
 }
 
 export default EventCard;
