@@ -21,8 +21,12 @@ function EventCard({ event, onJoin, onRemove, isJoined, onEdit, onDelete }) {
         </button>
       )}
 
+      {isJoined && (
+        <span style={{ marginLeft: 8, color: "#047857", fontWeight: 600 }}>Joined</span>
+      )}
+
       {isJoined && onRemove && (
-        <button className="btn btn-danger" onClick={() => onRemove(event.id)}>
+        <button className="btn btn-danger" onClick={() => onRemove(event.id)} style={{ marginLeft: 8 }}>
           Remove
         </button>
       )}
@@ -37,6 +41,40 @@ function EventCard({ event, onJoin, onRemove, isJoined, onEdit, onDelete }) {
           )}
         </div>
       )}
+
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+        <button
+          className="btn btn-ghost"
+          onClick={() => {
+            const shareText = `${event.title} on ${event.date}${event.time ? ' at ' + event.time : ''} - ${event.location || ''}`.trim();
+            if (navigator.share) {
+              navigator.share({ title: event.title, text: shareText, url: window.location.href }).catch(() => {});
+            } else {
+              navigator.clipboard?.writeText(shareText);
+              alert('Event details copied to clipboard');
+            }
+          }}
+        >
+          Share
+        </button>
+        <a
+          className="btn btn-ghost"
+          href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${(() => {
+            try {
+              const d = new Date(event.date);
+              const start = new Date(d);
+              const end = new Date(d);
+              end.setHours(end.getHours() + 1);
+              const fmt = (x) => x.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+              return `${fmt(start)}/${fmt(end)}`;
+            } catch { return '' }
+          })()}&details=${encodeURIComponent(event.description || '')}&location=${encodeURIComponent(event.location || '')}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Add to Google Calendar
+        </a>
+      </div>
     </div>
   );
 }

@@ -120,11 +120,13 @@ function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
                     <strong>{e.title}</strong><br />
                     {e.description || "No description"}<br />
                     {e.time && <em>{e.time}</em>}<br />
-                    {isJoined ? (
-                      <button onClick={() => onLeave(e.id)}>Leave</button>
-                    ) : (
-                      <button onClick={() => onJoin(e)}>Join</button>
-                    )}
+                    <div className="sticky-actions">
+                      {isJoined ? (
+                        <button className="btn btn-danger" onClick={() => onLeave(e.id)}>Leave</button>
+                      ) : (
+                        <button className="btn btn-primary" onClick={() => onJoin(e)}>Join</button>
+                      )}
+                    </div>
                     {e.custom && (
                       <>
                         {' '}

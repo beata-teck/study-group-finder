@@ -22,6 +22,7 @@ function App() {
   // Theme persisted in localStorage
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   const [showCreate, setShowCreate] = useState(false);
+  const [profileName, setProfileName] = useState(() => localStorage.getItem("profileName") || "");
   const [customEvents, setCustomEvents] = useState(() => {
     const saved = localStorage.getItem("customEvents");
     return saved ? JSON.parse(saved) : [];
@@ -42,6 +43,11 @@ function App() {
   useEffect(() => {
     localStorage.setItem("customEvents", JSON.stringify(customEvents));
   }, [customEvents]);
+
+  // Persist profile name
+  useEffect(() => {
+    localStorage.setItem("profileName", profileName);
+  }, [profileName]);
 
   // Join event (expects full event object)
   const handleJoin = (event) => {
@@ -102,6 +108,16 @@ function App() {
             <span>Study Finder</span>
           </div>
           <div>
+            <span style={{ marginRight: "0.75rem" }}>
+              {profileName ? (
+                <span>Hello, <strong>{profileName}</strong></span>
+              ) : (
+                <button className="btn btn-ghost" onClick={() => {
+                  const name = prompt('Enter your name');
+                  if (name) setProfileName(name);
+                }}>Set name</button>
+              )}
+            </span>
             <button
               className="btn btn-primary"
               onClick={() => setShowCreate(true)}
@@ -150,13 +166,18 @@ function App() {
               onJoin={handleJoin}
               onEdit={(ev) => setShowCreate(ev)}
               onDelete={handleDeleteCustom}
+              joinedEvents={joinedEvents}
             />
           </section>
 
           <section>
             <h2 className="section-title">My Events</h2>
             <p className="section-subtitle">Your joined events and groups.</p>
-            <MyEvents joinedEvents={joinedEvents} onRemove={handleLeave} />
+            <MyEvents
+              joinedEvents={joinedEvents}
+              onRemove={handleLeave}
+              onRemoveAll={() => setJoinedEvents([])}
+            />
           </section>
 
           <section id="calendar-section">
