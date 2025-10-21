@@ -7,6 +7,8 @@ import EventFilter from "./components/EventFilter";
 import eventsData from "./data/events.json";
 import CalendarView from "./components/CalanderVeiw"; 
 import CreateEventModal from "./components/CreateEventModal";
+import { useToast } from "./components/Toaster.jsx";
+import EventCard from "./components/EventCard";
 
 function App() {
   // Joined events persisted in localStorage
@@ -23,6 +25,7 @@ function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   const [showCreate, setShowCreate] = useState(false);
   const [profileName, setProfileName] = useState(() => localStorage.getItem("profileName") || "");
+  const toast = useToast();
   const [customEvents, setCustomEvents] = useState(() => {
     const saved = localStorage.getItem("customEvents");
     return saved ? JSON.parse(saved) : [];
@@ -54,12 +57,15 @@ function App() {
     if (!joinedEvents.find((e) => e.id === event.id)) {
       setJoinedEvents((prev) => [...prev, event]);
       incrementJoinCount(event.id);
+      const undo = () => setJoinedEvents((prev) => prev.filter((e) => e.id !== event.id));
+      toast?.show({ title: "Joined", message: event.title, actionLabel: "Undo", onAction: undo, variant: "success" });
     }
   };
 
   // Leave/remove event (by id)
   const handleLeave = (id) => {
     setJoinedEvents((prev) => prev.filter((e) => e.id !== id));
+    toast?.show({ title: "Left event", message: String(id), variant: "info" });
   };
 
   const incrementJoinCount = (eventId) => {
@@ -226,13 +232,16 @@ function App() {
         <CreateEventModal
           onClose={() => setShowCreate(false)}
           onSave={(ev) => {
+            const isEdit = customEvents.some((c) => c.id === ev.id);
             handleSaveCustom(ev);
             setShowCreate(false);
+            toast?.show({ title: isEdit ? "Event updated" : "Event created", message: ev.title, variant: "success" });
           }}
           initialEvent={typeof showCreate === 'object' ? showCreate : undefined}
           onDelete={(id) => {
             handleDeleteCustom(id);
             setShowCreate(false);
+            toast?.show({ title: "Event deleted", message: String(id), variant: "error" });
           }}
         />
       )}
