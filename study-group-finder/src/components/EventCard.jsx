@@ -1,7 +1,7 @@
 // src/components/EventCard.jsx
 import React from "react";
 
-function EventCard({ event, onJoin, onRemove, isJoined, onEdit, onDelete }) {
+function EventCard({ event, onJoin, onRemove, isJoined, onEdit, onDelete, onViewDetails }) {
   return (
     <div className="event-card card">
       <h3>{event.title}</h3>
@@ -57,6 +57,11 @@ function EventCard({ event, onJoin, onRemove, isJoined, onEdit, onDelete }) {
       )}
 
       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+        {onViewDetails && (
+          <button className="btn btn-primary" onClick={() => onViewDetails(event)}>
+            View Details
+          </button>
+        )}
         <button
           className="btn btn-ghost"
           onClick={() => {

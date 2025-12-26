@@ -1,0 +1,121 @@
+═══════════════════════════════════════════════════════════════
+  QUICK START GUIDE - Study Group Finder Backend Setup
+═══════════════════════════════════════════════════════════════
+
+STEP 1: START XAMPP
+─────────────────────────────────────────────────────────────
+1. Open XAMPP Control Panel
+2. Click "Start" for Apache
+3. Click "Start" for MySQL
+   ✓ Both should show green "Running"
+
+STEP 2: COPY BACKEND FILES
+─────────────────────────────────────────────────────────────
+Copy this folder:
+   backend/
+
+To this location:
+   C:\xampp\htdocs\study-group-finder-backend\
+
+MANUAL METHOD:
+1. Open File Explorer
+2. Go to: C:\xampp\htdocs\
+3. Create folder: study-group-finder-backend
+4. Copy ALL files from your project's backend/ folder
+
+COMMAND METHOD (PowerShell as Admin):
+   xcopy /E /I backend C:\xampp\htdocs\study-group-finder-backend
+
+STEP 3: CREATE DATABASE
+─────────────────────────────────────────────────────────────
+1. Open browser: http://localhost/phpmyadmin
+2. Click "New" in left sidebar
+3. Database name: study_group_finder
+4. Collation: utf8mb4_general_ci
+5. Click "Create"
+
+STEP 4: IMPORT DATABASE
+─────────────────────────────────────────────────────────────
+1. In phpMyAdmin, click on "study_group_finder" database
+2. Click "Import" tab
+3. Click "Choose File"
+4. Select: C:\xampp\htdocs\study-group-finder-backend\database\schema.sql
+5. Click "Go"
+   ✓ Should see: "Import has been successfully finished"
+
+STEP 5: TEST BACKEND
+─────────────────────────────────────────────────────────────
+Open browser and visit:
+   http://localhost/study-group-finder-backend/api/auth.php
+
+You should see JSON response (even if it's an error, that's OK!)
+
+STEP 6: UPDATE FRONTEND
+─────────────────────────────────────────────────────────────
+1. Open: src/services/api.js
+2. Verify line 4 says:
+   const API_BASE_URL = 'http://localhost/study-group-finder-backend/api';
+
+3. Replace App.jsx with API version:
+   - Rename: src/App.jsx → src/App.local.jsx (backup)
+   - Rename: src/App.api.jsx → src/App.jsx
+
+STEP 7: START FRONTEND
+─────────────────────────────────────────────────────────────
+1. Open terminal in project root
+2. Run: npm run dev
+3. Open: http://localhost:5173
+
+STEP 8: TEST THE APP
+─────────────────────────────────────────────────────────────
+1. Click "Login / Register"
+2. Register a new account
+3. Create an event
+4. Join an event
+5. Add a comment
+
+═══════════════════════════════════════════════════════════════
+  VERIFICATION CHECKLIST
+═══════════════════════════════════════════════════════════════
+
+✓ Apache is running in XAMPP
+✓ MySQL is running in XAMPP
+✓ Backend folder exists at: C:\xampp\htdocs\study-group-finder-backend\
+✓ Database "study_group_finder" created in phpMyAdmin
+✓ 5 tables visible: users, events, joined_events, comments, notifications
+✓ Can access: http://localhost/study-group-finder-backend/api/auth.php
+✓ Frontend API URL is correct
+✓ Frontend using App.jsx (API version)
+
+═══════════════════════════════════════════════════════════════
+  DEFAULT ADMIN ACCOUNT
+═══════════════════════════════════════════════════════════════
+
+Email:    admin@studyfinder.com
+Password: admin123
+
+⚠️ CHANGE THIS PASSWORD AFTER FIRST LOGIN!
+
+═══════════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+Problem: "Database connection failed"
+Solution: 
+  - Check MySQL is running
+  - Verify database name in config/database.php
+  - Default: root / (empty password)
+
+Problem: "CORS error" in browser
+Solution:
+  - Edit: C:\xampp\htdocs\study-group-finder-backend\config\cors.php
+  - Make sure it allows: http://localhost:5173
+
+Problem: "404 Not Found"
+Solution:
+  - Check backend folder is in correct location
+  - Verify Apache is running
+  - Check file paths
+
+═══════════════════════════════════════════════════════════════
+

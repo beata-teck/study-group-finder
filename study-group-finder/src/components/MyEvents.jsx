@@ -12,7 +12,7 @@ function sortByUpcoming(events) {
   });
 }
 
-export default function MyEvents({ joinedEvents = [], onRemove, onRemoveAll }) {
+export default function MyEvents({ joinedEvents = [], onRemove, onRemoveAll, onViewDetails }) {
   if (!joinedEvents || joinedEvents.length === 0) {
     return <p className="section-subtitle">You haven't joined any events yet.</p>;
   }
@@ -29,7 +29,7 @@ export default function MyEvents({ joinedEvents = [], onRemove, onRemoveAll }) {
       </div>
       <div className="grid-list">
         {sorted.map((ev) => (
-          <EventCard key={ev.id} event={ev} isJoined onRemove={onRemove} />
+          <EventCard key={ev.id} event={ev} isJoined onRemove={onRemove} onViewDetails={onViewDetails} />
         ))}
       </div>
     </>

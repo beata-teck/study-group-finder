@@ -7,8 +7,13 @@ import EventFilter from "./components/EventFilter";
 import eventsData from "./data/events.json";
 import CalendarView from "./components/CalanderVeiw"; 
 import CreateEventModal from "./components/CreateEventModal";
+import AuthModal from "./components/AuthModal";
+import ProfileModal from "./components/ProfileModal";
+import EventDetailModal from "./components/EventDetailModal";
+import NotificationCenter from "./components/NotificationCenter";
 import { useToast } from "./components/Toaster.jsx";
 import EventCard from "./components/EventCard";
+import { scheduleEventReminders } from "./utils/notifications";
 
 function App() {
   // Joined events persisted in localStorage
@@ -24,7 +29,17 @@ function App() {
   // Theme persisted in localStorage
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   const [showCreate, setShowCreate] = useState(false);
-  const [profileName, setProfileName] = useState(() => localStorage.getItem("profileName") || "");
+  const [showAuth, setShowAuth] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showPastEvents, setShowPastEvents] = useState(false);
+  
+  // User authentication state
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem("currentUser");
+    return saved ? JSON.parse(saved) : null;
+  });
+  
   const toast = useToast();
   const [customEvents, setCustomEvents] = useState(() => {
     const saved = localStorage.getItem("customEvents");
@@ -47,10 +62,14 @@ function App() {
     localStorage.setItem("customEvents", JSON.stringify(customEvents));
   }, [customEvents]);
 
-  // Persist profile name
+  // Persist current user
   useEffect(() => {
-    localStorage.setItem("profileName", profileName);
-  }, [profileName]);
+    if (currentUser) {
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem("currentUser");
+    }
+  }, [currentUser]);
 
   // Join event (expects full event object)
   const handleJoin = (event) => {
@@ -85,8 +104,40 @@ function App() {
 
   const allEvents = [...eventsData, ...customEvents];
 
+  // Schedule event reminders
+  useEffect(() => {
+    if (joinedEvents.length > 0 && toast) {
+      scheduleEventReminders(allEvents, joinedEvents, (reminder) => {
+        toast.show(reminder);
+      });
+    }
+  }, [joinedEvents, allEvents, toast]);
+
+  // Separate past and upcoming events
+  const now = new Date();
+  const upcomingEvents = allEvents.filter((e) => {
+    if (!e.date) return true;
+    try {
+      const eventDate = new Date(e.date);
+      return eventDate >= now;
+    } catch {
+      return true;
+    }
+  });
+
+  const pastEvents = allEvents.filter((e) => {
+    if (!e.date) return false;
+    try {
+      const eventDate = new Date(e.date);
+      return eventDate < now;
+    } catch {
+      return false;
+    }
+  });
+
   // Filter events by category and search
-  const filteredEvents = (allEvents || []).filter((e) => {
+  const eventsToFilter = showPastEvents ? pastEvents : upcomingEvents;
+  const filteredEvents = (eventsToFilter || []).filter((e) => {
     const matchesCategory = selectedCategory ? e.category === selectedCategory : true;
     const q = searchQuery.trim().toLowerCase();
     const matchesSearch = q
@@ -95,6 +146,27 @@ function App() {
           .some((v) => String(v).toLowerCase().includes(q))
       : true;
     return matchesCategory && matchesSearch;
+  });
+
+  // Separate joined events into upcoming and past
+  const upcomingJoinedEvents = joinedEvents.filter((e) => {
+    if (!e.date) return true;
+    try {
+      const eventDate = new Date(e.date);
+      return eventDate >= now;
+    } catch {
+      return true;
+    }
+  });
+
+  const pastJoinedEvents = joinedEvents.filter((e) => {
+    if (!e.date) return false;
+    try {
+      const eventDate = new Date(e.date);
+      return eventDate < now;
+    } catch {
+      return false;
+    }
   });
 
   const clearFilters = () => {
@@ -121,6 +193,78 @@ function App() {
     }
   };
 
+  // Authentication handlers
+  const handleLogin = (credentials) => {
+    // In a real app, this would call an API
+    // For now, we'll check localStorage for registered users
+    const users = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+    const user = users.find((u) => u.email === credentials.email && u.password === credentials.password);
+    
+    if (user) {
+      setCurrentUser({ ...user, password: undefined }); // Don't store password in state
+      setShowAuth(false);
+      toast?.show({ title: "Login successful", message: `Welcome back, ${user.name}!`, variant: "success" });
+    } else {
+      toast?.show({ title: "Login failed", message: "Invalid email or password", variant: "error" });
+    }
+  };
+
+  const handleRegister = (userData) => {
+    // In a real app, this would call an API
+    const users = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+    
+    if (users.find((u) => u.email === userData.email)) {
+      toast?.show({ title: "Registration failed", message: "Email already registered", variant: "error" });
+      return;
+    }
+
+    const newUser = {
+      id: Date.now(),
+      ...userData,
+      createdAt: new Date().toISOString(),
+    };
+    
+    users.push(newUser);
+    localStorage.setItem("registeredUsers", JSON.stringify(users));
+    
+    setCurrentUser({ ...newUser, password: undefined });
+    setShowAuth(false);
+    toast?.show({ title: "Registration successful", message: `Welcome, ${newUser.name}!`, variant: "success" });
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setShowProfile(false);
+    toast?.show({ title: "Logged out", message: "You have been logged out", variant: "info" });
+  };
+
+  const handleSaveProfile = (profileData) => {
+    if (!currentUser) return;
+    
+    const users = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+    const updatedUsers = users.map((u) =>
+      u.id === currentUser.id ? { ...u, ...profileData } : u
+    );
+    localStorage.setItem("registeredUsers", JSON.stringify(updatedUsers));
+    
+    setCurrentUser({ ...currentUser, ...profileData });
+    setShowProfile(false);
+    toast?.show({ title: "Profile updated", message: "Your profile has been updated", variant: "success" });
+  };
+
+  const handleDeleteProfile = () => {
+    if (!currentUser) return;
+    
+    const users = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+    const updatedUsers = users.filter((u) => u.id !== currentUser.id);
+    localStorage.setItem("registeredUsers", JSON.stringify(updatedUsers));
+    
+    setCurrentUser(null);
+    setShowProfile(false);
+    setJoinedEvents([]);
+    toast?.show({ title: "Account deleted", message: "Your account has been deleted", variant: "info" });
+  };
+
   return (
     <div>
       <div className="topbar">
@@ -130,16 +274,32 @@ function App() {
             <span>Study Finder</span>
           </div>
           <div>
-            <span style={{ marginRight: "0.75rem" }}>
-              {profileName ? (
-                <span>Hello, <strong>{profileName}</strong></span>
-              ) : (
-                <button className="btn btn-ghost" onClick={() => {
-                  const name = prompt('Enter your name');
-                  if (name) setProfileName(name);
-                }}>Set name</button>
-              )}
-            </span>
+            {currentUser ? (
+              <>
+                <span style={{ marginRight: "0.75rem" }}>
+                  Hello, <strong>{currentUser.name}</strong>
+                </span>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => setShowProfile(true)}
+                  style={{ marginRight: "0.5rem" }}
+                >
+                  Profile
+                </button>
+              </>
+            ) : (
+              <button
+                className="btn btn-ghost"
+                onClick={() => setShowAuth(true)}
+                style={{ marginRight: "0.5rem" }}
+              >
+                Login / Register
+              </button>
+            )}
+            <NotificationCenter
+              joinedEvents={joinedEvents}
+              onEventClick={(event) => setSelectedEvent(event)}
+            />
             <button
               className="btn btn-primary"
               onClick={() => setShowCreate(true)}
@@ -158,13 +318,13 @@ function App() {
             >
               📅 Calendar
             </button>
-          <button
-            className="btn btn-ghost"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            aria-label="Toggle theme"
-          >
-            {theme === "light" ? "Dark mode" : "Light mode"}
-          </button>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              aria-label="Toggle theme"
+            >
+              {theme === "light" ? "Dark mode" : "Light mode"}
+            </button>
           </div>
         </div>
       </div>
@@ -177,18 +337,43 @@ function App() {
             <h2 className="section-title">Trending this week</h2>
             <p className="section-subtitle">Most joined recently</p>
             <div className="grid-list">
-              {allEvents
+              {upcomingEvents
                 .map((e) => ({ e, c: getJoinCount(e.id) }))
                 .sort((a, b) => b.c - a.c)
                 .slice(0, 5)
                 .map(({ e }) => (
-                  <EventCard key={e.id} event={e} onJoin={handleJoin} isJoined={joinedEvents.some((j) => j.id === e.id)} />
+                  <EventCard
+                    key={e.id}
+                    event={e}
+                    onJoin={handleJoin}
+                    isJoined={joinedEvents.some((j) => j.id === e.id)}
+                    onViewDetails={(ev) => setSelectedEvent(ev)}
+                  />
                 ))}
             </div>
           </section>
           <section>
-            <h2 className="section-title">Upcoming Events</h2>
-            <p className="section-subtitle">Browse and join sessions that fit your schedule.</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+              <div>
+                <h2 className="section-title">
+                  {showPastEvents ? "Past Events" : "Upcoming Events"}
+                </h2>
+                <p className="section-subtitle">
+                  {showPastEvents
+                    ? "Browse events you've attended or missed."
+                    : "Browse and join sessions that fit your schedule."}
+                </p>
+              </div>
+              <button
+                className="btn btn-ghost"
+                onClick={() => {
+                  setShowPastEvents(!showPastEvents);
+                  clearFilters();
+                }}
+              >
+                {showPastEvents ? "Show Upcoming" : "Show Past Events"}
+              </button>
+            </div>
             <EventFilter
               selectedCategory={selectedCategory}
               onFilterChange={setSelectedCategory}
@@ -202,16 +387,39 @@ function App() {
               onEdit={(ev) => setShowCreate(ev)}
               onDelete={handleDeleteCustom}
               joinedEvents={joinedEvents}
+              onViewDetails={(ev) => setSelectedEvent(ev)}
             />
           </section>
 
           <section>
             <h2 className="section-title">My Events</h2>
             <p className="section-subtitle">Your joined events and groups.</p>
+            <div style={{ marginBottom: "1rem" }}>
+              <button
+                className="btn btn-ghost"
+                onClick={() => setShowPastEvents(false)}
+                style={{ marginRight: "0.5rem" }}
+              >
+                Upcoming ({upcomingJoinedEvents.length})
+              </button>
+              <button
+                className="btn btn-ghost"
+                onClick={() => setShowPastEvents(true)}
+              >
+                Past ({pastJoinedEvents.length})
+              </button>
+            </div>
             <MyEvents
-              joinedEvents={joinedEvents}
+              joinedEvents={showPastEvents ? pastJoinedEvents : upcomingJoinedEvents}
               onRemove={handleLeave}
-              onRemoveAll={() => setJoinedEvents([])}
+              onRemoveAll={() => {
+                if (showPastEvents) {
+                  setJoinedEvents(upcomingJoinedEvents);
+                } else {
+                  setJoinedEvents(pastJoinedEvents);
+                }
+              }}
+              onViewDetails={(ev) => setSelectedEvent(ev)}
             />
           </section>
 
@@ -243,6 +451,35 @@ function App() {
             setShowCreate(false);
             toast?.show({ title: "Event deleted", message: String(id), variant: "error" });
           }}
+        />
+      )}
+
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onLogin={handleLogin}
+          onRegister={handleRegister}
+        />
+      )}
+
+      {showProfile && currentUser && (
+        <ProfileModal
+          onClose={() => setShowProfile(false)}
+          user={currentUser}
+          onSave={handleSaveProfile}
+          onDelete={handleDeleteProfile}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+          onJoin={handleJoin}
+          onLeave={handleLeave}
+          isJoined={joinedEvents.some((j) => j.id === selectedEvent.id)}
+          currentUser={currentUser}
         />
       )}
     </div>

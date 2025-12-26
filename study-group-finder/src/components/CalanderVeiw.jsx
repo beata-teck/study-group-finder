@@ -1,4 +1,4 @@
-// src/components/CalendarView.jsx
+
 import React, { useState } from "react";
 
 function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
@@ -14,7 +14,6 @@ function CalendarView({ events, joinedEvents, onJoin, onLeave }) {
   const firstDay = new Date(currentYear, currentMonth, 1).getDay();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-  // Map events by date
   const eventMap = {};
   events.forEach((event) => {
     const eventDate = new Date(event.date);
